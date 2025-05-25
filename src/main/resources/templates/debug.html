@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram WebApp Debug</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 1.5em;
+            background: #fafafa;
+        }
+        pre {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 1em;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<h2>🔍 Telegram WebApp Debug Info</h2>
+<pre id="output">Загрузка...</pre>
+
+<script>
+    Telegram.WebApp.ready();
+
+    const output = document.getElementById("output");
+    const now = new Date().toLocaleString();
+    const initData = Telegram.WebApp.initData;
+
+    // Сохраняем в cookie
+    if (initData && !document.cookie.includes("tg_init_data=")) {
+      document.cookie = "tg_init_data=" + encodeURIComponent(initData)
+        + "; path=/; SameSite=None; Secure";
+    }
+
+    output.textContent = `
+🕒 Время: ${now}
+
+📦 Telegram.WebApp.initData:
+${initData || '[нет данных]'}
+
+🍪 document.cookie:
+${document.cookie || '[cookie пуст]'}
+
+🚀 Открой это в Telegram WebApp, а не в браузере!
+    `.trim();
+</script>
+</body>
+</html>

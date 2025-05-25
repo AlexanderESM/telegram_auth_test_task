@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отладка Telegram WebApp</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2em;
+        }
+        .debug {
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 1em;
+            margin-top: 2em;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Добро пожаловать, <span th:text="${user.firstName} + ' ' + ${user.lastName}">Гость</span>!</h1>
+<p><strong>ID:</strong> <span th:text="${user.id}">???</span></p>
+<p><strong>Username:</strong> <span th:text="${user.username}">???</span></p>
+
+<div class="debug" id="debug">Загрузка отладочной информации...</div>
+
+<script>
+    Telegram.WebApp.ready();
+
+    const initData = Telegram.WebApp.initData;
+    const now = new Date().toLocaleString();
+
+    // Устанавливаем cookie при первом запуске
+    if (initData && !document.cookie.includes("tg_init_data=")) {
+        document.cookie = "tg_init_data=" + encodeURIComponent(initData)
+            + "; path=/; SameSite=None; Secure";
+    }
+
+    // Выводим отладочную информацию
+    document.getElementById("debug").innerHTML = `
+🕒 Время: ${now}
+📦 initData:
+${initData || '[нет данных]'}
+
+🍪 document.cookie:
+${document.cookie || '[cookie пуст]'}
+    `;
+</script>
+
+</body>
+</html>
