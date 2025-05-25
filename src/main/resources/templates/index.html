@@ -1,66 +1,25 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Отладка Telegram WebApp</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Главная</title>
+    <script>
+        // Перенаправление на отладку, если cookie initData отсутствует
+        if (!document.cookie.includes("tg_init_data=")) {
+            console.warn("Cookie 'tg_init_data' отсутствует. Перенаправление на debug.html...");
+            window.location.href = "/debug.html";
+        }
+    </script>
     <style>
         body {
             font-family: sans-serif;
             margin: 2em;
         }
-        .debug {
-            background: #f5f5f5;
-            border: 1px solid #ccc;
-            padding: 1em;
-            margin-top: 2em;
-            white-space: pre-wrap;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
-
-<h1>Добро пожаловать, <span id="name">Гость</span>!</h1>
-<p><strong>ID:</strong> <span id="user-id">???</span></p>
-<p><strong>Username:</strong> <span id="username">???</span></p>
-
-<div class="debug" id="debug">Загрузка отладочной информации...</div>
-
-<script>
-    if (Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-
-        const initData = Telegram.WebApp.initData;
-        const now = new Date().toLocaleString();
-
-        try {
-            const params = new URLSearchParams(initData);
-            const userJson = params.get("user");
-            if (userJson) {
-                const user = JSON.parse(userJson);
-                document.getElementById("name").textContent = user.first_name + " " + (user.last_name || "");
-                document.getElementById("user-id").textContent = user.id;
-                document.getElementById("username").textContent = user.username || "(без username)";
-            }
-        } catch (e) {
-            console.warn("Невозможно разобрать initData:", e);
-        }
-
-        // Установим cookie
-        if (initData && !document.cookie.includes("tg_init_data=")) {
-            document.cookie = "tg_init_data=" + encodeURIComponent(initData) + "; path=/; SameSite=None; Secure";
-        }
-
-        document.getElementById("debug").innerText = `
-🕒 Время: ${now}
-📦 initData: ${initData || '[нет данных]'}
-🍪 document.cookie: ${document.cookie || '[cookie пуст]'}
-        `;
-    } else {
-        document.getElementById("debug").innerText = "❌ Telegram.WebApp не загружен.";
-    }
-</script>
-
+<h1>Добро пожаловать, <span th:text="${user.firstName} + ' ' + ${user.lastName}">Гость</span>!</h1>
+<p><strong>ID:</strong> <span th:text="${user.id}">???</span></p>
+<p><strong>Username:</strong> <span th:text="${user.username}">???</span></p>
 </body>
 </html>
