@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
 
-                // ✅ Отключаем только X-Frame-Options для поддержки Telegram WebApp
+                // Отключаем только X-Frame-Options для поддержки Telegram WebApp
                 .headers(headers -> headers.frameOptions(config -> config.disable()))
 
                 .build();
