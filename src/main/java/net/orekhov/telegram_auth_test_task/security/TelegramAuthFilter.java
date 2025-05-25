@@ -1,5 +1,6 @@
 package net.orekhov.telegram_auth_test_task.security;
 
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +32,6 @@ import java.util.Optional;
 public class TelegramAuthFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramAuthFilter.class);
-
     private final TelegramAuthService authService;
 
     /**
@@ -51,32 +53,42 @@ public class TelegramAuthFilter extends OncePerRequestFilter {
 
         Cookie[] cookies = request.getCookies();
 
-        // 🔍 Лог всех cookie
+        //  Лог всех cookie
         if (cookies != null) {
             Arrays.stream(cookies).forEach(c ->
-                    logger.debug("🍪 Cookie: {} = {}", c.getName(), c.getValue()));
+                    logger.debug(" Cookie: {} = {}", c.getName(), c.getValue()));
         } else {
-            logger.warn("❌ Cookie-массив отсутствует (null)");
+            logger.warn(" Cookie-массив отсутствует (null)");
         }
 
-        // 📥 Извлекаем initData
-        String initData = extractInitDataFromCookies(cookies);
-        logger.info("📥 initData from cookie: {}", initData);
+        // Извлекаем initData
+        String initDataRaw = extractInitDataFromCookies(cookies);
+        String initData = initDataRaw != null ? URLDecoder.decode(initDataRaw, StandardCharsets.UTF_8) : null;
 
-        if (initData == null || initData.isBlank()) {
-            logger.debug("❗ Cookie 'tg_init_data' отсутствует или пуст.");
+        logger.info("initData from cookie (decoded): {}", initData);
+
+        if (initData == null || initData.isBlank() || "[пусто]".equals(initData)) {
+            logger.warn("Cookie 'tg_init_data' отсутствует, пуст или содержит [пусто].");
         }
 
-        // ✅ Валидация и установка аутентификации
+        // 🛑 Проверка на уже аутентифицированного пользователя
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            logger.debug("Пользователь уже аутентифицирован — фильтр пропущен.");
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // Валидация и установка аутентификации
         Optional<Map<String, String>> userDataOpt = authService.validateAndExtractUserData(initData);
         if (userDataOpt.isPresent()) {
             TelegramUserDetails userDetails = new TelegramUserDetails(userDataOpt.get());
             Authentication auth = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
-            logger.info("✅ Пользователь Telegram аутентифицирован: {}", userDetails.getUsername());
+            logger.info("✅ Telegram-пользователь аутентифицирован: id={}, username={}",
+                    userDetails.getId(), userDetails.getUsername());
         } else {
-            logger.warn("⚠️ Не удалось аутентифицировать пользователя — initData невалиден или отсутствует.");
+            logger.warn("Не удалось аутентифицировать пользователя — initData невалиден или отсутствует.");
         }
 
         chain.doFilter(request, response);
