@@ -32,25 +32,16 @@ public class TelegramUserDetails implements UserDetails {
         this.username = data.getOrDefault("username", "");
     }
 
-    /**
-     * Telegram WebApp не использует роли, поэтому возвращается пустой список.
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(); // роли не используются
     }
 
-    /**
-     * Telegram WebApp не использует пароль. Возвращается пустая строка во избежание NPE.
-     */
     @Override
     public String getPassword() {
-        return "";
+        return ""; // не используется
     }
 
-    /**
-     * Возвращает Telegram username (может быть пустым, если Telegram не передал его).
-     */
     @Override
     public String getUsername() {
         return username;
@@ -64,25 +55,29 @@ public class TelegramUserDetails implements UserDetails {
 
     @Override public boolean isEnabled() { return true; }
 
-    /**
-     * Возвращает ID пользователя Telegram (в виде строки).
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * Возвращает имя пользователя (first_name).
-     */
     public String getFirstName() {
         return firstName;
     }
 
-    /**
-     * Возвращает фамилию пользователя (last_name).
-     */
     public String getLastName() {
         return lastName;
+    }
+
+    /**
+     * Возвращает строковое представление пользователя.
+     */
+    @Override
+    public String toString() {
+        return "TelegramUserDetails{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 }
 
