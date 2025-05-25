@@ -71,7 +71,7 @@ public class TelegramAuthFilter extends OncePerRequestFilter {
             logger.warn("Cookie 'tg_init_data' отсутствует, пуст или содержит [пусто].");
         }
 
-        // 🛑 Проверка на уже аутентифицированного пользователя
+        // Проверка на уже аутентифицированного пользователя
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             logger.debug("Пользователь уже аутентифицирован — фильтр пропущен.");
             chain.doFilter(request, response);
@@ -85,7 +85,7 @@ public class TelegramAuthFilter extends OncePerRequestFilter {
             Authentication auth = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
-            logger.info("✅ Telegram-пользователь аутентифицирован: id={}, username={}",
+            logger.info("Telegram-пользователь аутентифицирован: id={}, username={}",
                     userDetails.getId(), userDetails.getUsername());
         } else {
             logger.warn("Не удалось аутентифицировать пользователя — initData невалиден или отсутствует.");

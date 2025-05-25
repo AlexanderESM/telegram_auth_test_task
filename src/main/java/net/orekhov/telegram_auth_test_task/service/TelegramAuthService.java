@@ -41,7 +41,7 @@ public class TelegramAuthService {
      */
     public Optional<Map<String, String>> validateAndExtractUserData(String initData) {
         if (initData == null || initData.isBlank() || initData.equals("[пусто]")) {
-            logger.warn("⚠initData пуст или некорректен: '{}'", initData);
+            logger.warn("initData пуст или некорректен: '{}'", initData);
             return Optional.empty();
         }
 
@@ -49,12 +49,12 @@ public class TelegramAuthService {
         String hash = dataMap.remove("hash");
 
         if (hash == null || hash.isBlank()) {
-            logger.warn("⚠Hash не найден в initData.");
+            logger.warn("Hash не найден в initData.");
             return Optional.empty();
         }
 
         if (!dataMap.containsKey("id")) {
-            logger.warn("⚠Поле 'id' отсутствует в данных Telegram.");
+            logger.warn("Поле 'id' отсутствует в данных Telegram.");
             return Optional.empty();
         }
 
