@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>🛠️ Отладка Telegram WebApp</title>
+    <title>Отладка Telegram WebApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -25,13 +25,13 @@
     </style>
 </head>
 <body>
-<h1>🛠️ Отладка Telegram WebApp</h1>
+<h1>Отладка Telegram WebApp</h1>
 
 <div id="output">
     Загрузка...
 </div>
 
-<button onclick="location.reload()">🔄 Обновить</button>
+<button onclick="location.reload()">Обновить</button>
 
 <script>
     function showDebugInfo() {
@@ -46,10 +46,10 @@
         }
 
         document.getElementById("output").innerHTML = `
-✅ <b>Telegram.WebApp</b> доступен<br><br>
-🕒 <b>Время:</b> ${now}<br><br>
-📦 <b>initData:</b><br><pre>${initData}</pre><br>
-🍪 <b>document.cookie:</b><br><pre>${cookie}</pre>
+<b>Telegram.WebApp</b> доступен<br><br>
+<b>Время:</b> ${now}<br><br>
+<b>initData:</b><br><pre>${initData}</pre><br>
+ <b>document.cookie:</b><br><pre>${cookie}</pre>
         `;
     }
 
@@ -57,7 +57,7 @@
         Telegram.WebApp.ready();
         setTimeout(showDebugInfo, 300); // даём WebApp загрузиться
     } else {
-        document.getElementById("output").innerText = "❌ Telegram.WebApp не загружен.";
+        document.getElementById("output").innerText = "Telegram.WebApp не загружен.";
     }
 </script>
 </body>
