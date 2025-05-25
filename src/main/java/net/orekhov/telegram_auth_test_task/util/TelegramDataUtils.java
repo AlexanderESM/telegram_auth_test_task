@@ -1,5 +1,6 @@
 package net.orekhov.telegram_auth_test_task.util;
 
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
  * <p>Документация Telegram WebApp initData:
  * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  */
-public class TelegramDataUtils {
+public final class TelegramDataUtils {
 
     /**
      * Разбирает строку {@code initData} в карту параметров.
@@ -23,8 +24,8 @@ public class TelegramDataUtils {
      * <p>Пары без символа {@code '='} игнорируются.
      * Значения декодируются с помощью {@link URLDecoder} и {@code UTF-8} кодировки.
      *
-     * @param initData строка параметров, переданная WebApp, например: {@code id=123&first_name=Ivan&hash=abc123}
-     * @return {@link Map} с ключами и значениями параметров, или пустая карта, если входная строка {@code null} или пуста
+     * @param initData строка параметров, переданная WebApp
+     * @return {@link Map} с ключами и значениями параметров, или пустая карта
      */
     public static Map<String, String> parseInitData(String initData) {
         if (initData == null || initData.isBlank()) {
@@ -36,8 +37,19 @@ public class TelegramDataUtils {
                 .filter(pair -> pair.length == 2)
                 .collect(Collectors.toMap(
                         pair -> pair[0],
-                        pair -> URLDecoder.decode(pair[1], StandardCharsets.UTF_8)
+                        pair -> safeDecode(pair[1])
                 ));
+    }
+
+    /**
+     * Безопасное декодирование строки из URL формата.
+     */
+    private static String safeDecode(String value) {
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return value; // Возвращаем как есть, если не удалось декодировать
+        }
     }
 
     /**
@@ -45,4 +57,5 @@ public class TelegramDataUtils {
      */
     private TelegramDataUtils() {}
 }
+
 
