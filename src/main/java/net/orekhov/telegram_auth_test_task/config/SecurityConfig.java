@@ -12,8 +12,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 /**
  * Конфигурация Spring Security для Telegram WebApp.
  * <p>
- * Отключает дефолтную форму логина и добавляет кастомный фильтр {@link TelegramAuthFilter}
- * для обработки initData от Telegram и установки аутентификации.
+ * Отключает стандартные формы логина и заголовки безопасности,
+ * добавляет фильтр TelegramAuthFilter для обработки initData из WebApp.
  */
 @Configuration
 @EnableWebSecurity
@@ -22,7 +22,7 @@ public class SecurityConfig {
     private final TelegramAuthFilter telegramAuthFilter;
 
     /**
-     * Конструктор, внедряющий TelegramAuthFilter.
+     * Конструктор с внедрением кастомного фильтра аутентификации.
      *
      * @param telegramAuthFilter фильтр, обрабатывающий Telegram initData
      */
@@ -31,33 +31,29 @@ public class SecurityConfig {
     }
 
     /**
-     * Определяет политику безопасности для приложения:
-     * <ul>
-     *     <li>Разрешает доступ к публичным маршрутам (/, /unauthenticated, статика)</li>
-     *     <li>Требует аутентификацию для всех остальных запросов</li>
-     *     <li>Добавляет TelegramAuthFilter перед UsernamePasswordAuthenticationFilter</li>
-     *     <li>Отключает logout (если не нужен)</li>
-     *     <li>Оставляет httpBasic и formLogin по умолчанию (можно отключить)</li>
-     * </ul>
-     *
-     * @param http HttpSecurity DSL
-     * @return SecurityFilterChain
-     * @throws Exception при ошибке конфигурации
+     * Настраивает цепочку фильтров безопасности:
+     * - разрешает публичный доступ к начальной странице и статике;
+     * - отключает стандартные формы аутентификации;
+     * - отключает X-Frame-Options, чтобы Telegram WebApp мог встраивать сайт;
+     * - добавляет TelegramAuthFilter перед UsernamePasswordAuthenticationFilter.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/unauthenticated", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/unauthenticated", "/css/**", "/js/**", "/debug.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(telegramAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout.disable())
                 .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> httpBasic.disable()) // отключаем и это, если не нужно
+                .httpBasic(httpBasic -> httpBasic.disable())
+
+                // ✅ Отключаем только X-Frame-Options для поддержки Telegram WebApp
+                .headers(headers -> headers.frameOptions(config -> config.disable()))
+
                 .build();
     }
-
 }
 
