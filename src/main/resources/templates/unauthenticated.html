@@ -3,9 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Не аутентифицирован</title>
+    <meta http-equiv="refresh" content="5; URL=/debug.html">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #fafafa;
+            padding: 2em;
+            text-align: center;
+        }
+        h2 {
+            color: #d9534f;
+        }
+        p {
+            font-size: 1.1em;
+        }
+        .note {
+            margin-top: 1em;
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-<h2>Вы не аутентифицированы через Telegram</h2>
-<p>Пожалуйста, откройте приложение через Telegram WebApp-кнопку.</p>
+<h2>Вы не аутентифицированы</h2>
+<p>Пожалуйста, откройте приложение <strong>через Telegram WebApp-кнопку</strong>.</p>
+<div class="note">
+    Через 5 секунд вы будете автоматически перенаправлены на страницу отладки.<br>
+    Или <a href="/debug.html">нажмите сюда</a> для ручного перехода.
+</div>
 </body>
 </html>
