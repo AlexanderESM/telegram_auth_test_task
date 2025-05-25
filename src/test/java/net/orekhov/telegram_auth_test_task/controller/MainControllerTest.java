@@ -15,21 +15,34 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Юнит-тесты для контроллера {@link MainController}.
+ * Проверяет поведение при аутентифицированном и неаутентифицированном пользователе.
+ */
 @WebMvcTest(MainController.class)
 class MainControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Тестирует поведение при отсутствии аутентифицированного пользователя.
+     * Ожидается, что контроллер вернёт представление "unauthenticated".
+     */
     @Test
     void whenUserIsNotAuthenticated_thenReturnUnauthenticatedView() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("unauthenticated"));
+                .andExpect(status().isOk()) // Ожидаем HTTP 200
+                .andExpect(view().name("unauthenticated")); // Ожидаем шаблон "unauthenticated"
     }
 
+    /**
+     * Тестирует поведение при наличии аутентифицированного пользователя.
+     * Ожидается, что контроллер вернёт шаблон "index" и добавит объект пользователя в модель.
+     */
     @Test
     void whenUserIsAuthenticated_thenReturnIndexViewWithUser() throws Exception {
+        // Подготавливаем пользователя
         TelegramUserDetails user = new TelegramUserDetails(Map.of(
                 "id", "123",
                 "first_name", "Ivan",
@@ -37,11 +50,13 @@ class MainControllerTest {
                 "username", "ivan_petrov"
         ));
 
+        // Создаём объект аутентификации
         Authentication auth = new UsernamePasswordAuthenticationToken(user, null, List.of());
 
+        // Выполняем GET-запрос с этим пользователем
         mockMvc.perform(get("/").with(authentication(auth)))
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"))
-                .andExpect(model().attribute("user", user));
+                .andExpect(status().isOk()) // Ожидаем HTTP 200
+                .andExpect(view().name("index")) // Ожидаем шаблон "index"
+                .andExpect(model().attribute("user", user)); // Проверяем наличие пользователя в модели
     }
 }

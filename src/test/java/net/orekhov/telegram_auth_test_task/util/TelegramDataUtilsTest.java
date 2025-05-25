@@ -6,8 +6,15 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Юнит-тесты для {@link TelegramDataUtils}.
+ * Проверяют корректность разбора строки initData в карту параметров.
+ */
 class TelegramDataUtilsTest {
 
+    /**
+     * Тест: парсинг корректной строки должен вернуть соответствующую карту.
+     */
     @Test
     void parseInitData_shouldParseValidData() {
         String initData = "id=12345&first_name=Ivan&username=test_user";
@@ -19,6 +26,9 @@ class TelegramDataUtilsTest {
         assertEquals("test_user", result.get("username"));
     }
 
+    /**
+     * Тест: значения должны корректно декодироваться из URL-формата.
+     */
     @Test
     void parseInitData_shouldDecodeUrlValues() {
         String initData = "first_name=Ivan%20Petrov&city=Moscow%2FRegion";
@@ -28,6 +38,9 @@ class TelegramDataUtilsTest {
         assertEquals("Moscow/Region", result.get("city"));
     }
 
+    /**
+     * Тест: пары без знака равенства должны игнорироваться.
+     */
     @Test
     void parseInitData_shouldIgnorePairsWithoutEqualsSign() {
         String initData = "id=12345&invalidpair&first_name=Ivan";
@@ -39,6 +52,9 @@ class TelegramDataUtilsTest {
         assertFalse(result.containsKey("invalidpair"));
     }
 
+    /**
+     * Тест: при пустом или null вводе метод должен возвращать пустую карту.
+     */
     @Test
     void parseInitData_shouldReturnEmptyMapOnNullOrEmptyInput() {
         assertTrue(TelegramDataUtils.parseInitData(null).isEmpty());
@@ -46,11 +62,15 @@ class TelegramDataUtilsTest {
         assertTrue(TelegramDataUtils.parseInitData("     ").isEmpty());
     }
 
+    /**
+     * Тест: некорректное URL-значение не должно вызывать исключение.
+     * Значение возвращается как есть.
+     */
     @Test
     void parseInitData_shouldHandleMalformedEncodingGracefully() {
-        String brokenValue = "name=John%XY";  // некорректная %-escape последовательность
+        String brokenValue = "name=John%XY";  // недопустимая escape-последовательность
         Map<String, String> result = TelegramDataUtils.parseInitData(brokenValue);
 
-        assertEquals("John%XY", result.get("name")); // не декодируется — оставляем как есть
+        assertEquals("John%XY", result.get("name")); // недекодированное значение
     }
 }
