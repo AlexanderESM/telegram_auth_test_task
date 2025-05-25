@@ -1,5 +1,6 @@
 package net.orekhov.telegram_auth_test_task.service;
 
+
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,6 @@ public class TelegramAuthService {
 
     /**
      * Устанавливает токен бота вручную (например, для тестов).
-     * @param token токен Telegram-бота
      */
     public void setBotToken(String token) {
         this.botToken = token;
@@ -40,16 +40,21 @@ public class TelegramAuthService {
      * @return Optional с пользовательскими данными без поля hash
      */
     public Optional<Map<String, String>> validateAndExtractUserData(String initData) {
-        if (initData == null || initData.isBlank()) {
-            logger.warn("⚠️ Пустой или null initData получен.");
+        if (initData == null || initData.isBlank() || initData.equals("[пусто]")) {
+            logger.warn("⚠initData пуст или некорректен: '{}'", initData);
             return Optional.empty();
         }
 
         Map<String, String> dataMap = TelegramDataUtils.parseInitData(initData);
         String hash = dataMap.remove("hash");
 
-        if (hash == null) {
-            logger.warn("⚠️ Hash не найден в initData.");
+        if (hash == null || hash.isBlank()) {
+            logger.warn("⚠Hash не найден в initData.");
+            return Optional.empty();
+        }
+
+        if (!dataMap.containsKey("id")) {
+            logger.warn("⚠Поле 'id' отсутствует в данных Telegram.");
             return Optional.empty();
         }
 
@@ -58,47 +63,51 @@ public class TelegramAuthService {
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining("\n"));
 
-        logger.debug("📦 dataCheckString:\n{}", dataCheckString);
+        logger.debug("dataCheckString:\n{}", dataCheckString);
 
         if (botToken == null || botToken.isBlank()) {
-            logger.error("❌ botToken не установлен! Проверьте application.properties.");
+            logger.error("botToken не установлен! Проверьте application.properties.");
             return Optional.empty();
         }
 
         try {
-            Mac hmac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec keySpec = new SecretKeySpec(
-                    ("WebAppData" + botToken).getBytes(StandardCharsets.UTF_8),
-                    "HmacSHA256"
-            );
-            hmac.init(keySpec);
-            byte[] digest = hmac.doFinal(dataCheckString.getBytes(StandardCharsets.UTF_8));
-            String calcHash = Hex.encodeHexString(digest);
-
-            logger.debug("🔐 Вычисленный хэш: {}", calcHash);
-            logger.debug("🆚 Ожидаемый хэш: {}", hash);
+            String calcHash = calculateHmac(dataCheckString);
+            logger.debug("Вычисленный хэш: {}", calcHash);
+            logger.debug("Хэш от клиента: {}", hash);
 
             if (calcHash.equals(hash)) {
-                logger.info("✅ Хэш совпадает. Аутентификация успешна.");
+                logger.info("Хэш совпадает. Пользователь аутентифицирован.");
                 return Optional.of(dataMap);
             } else {
-                logger.warn("❌ Хэш не совпадает. Ожидалось: {}, Получено: {}", calcHash, hash);
+                logger.warn("Хэш не совпадает. Ожидалось: {}, Получено: {}", calcHash, hash);
                 return Optional.empty();
             }
         } catch (Exception e) {
-            logger.error("🔥 Ошибка при вычислении HMAC: {}", e.getMessage(), e);
+            logger.error("Ошибка при вычислении HMAC: {}", e.getMessage(), e);
             return Optional.empty();
         }
     }
 
     /**
-     * Только проверка валидности initData без возврата содержимого.
-     *
-     * @param initData строка initData
-     * @return true, если хэш валиден
+     * Проверка только валидности initData без извлечения содержимого.
      */
     public boolean isInitDataValid(String initData) {
         return validateAndExtractUserData(initData).isPresent();
     }
+
+    /**
+     * Вычисляет HMAC-SHA256 по заданной строке.
+     */
+    private String calculateHmac(String dataCheckString) throws Exception {
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec keySpec = new SecretKeySpec(
+                ("WebAppData" + botToken).getBytes(StandardCharsets.UTF_8),
+                "HmacSHA256"
+        );
+        hmac.init(keySpec);
+        byte[] digest = hmac.doFinal(dataCheckString.getBytes(StandardCharsets.UTF_8));
+        return Hex.encodeHexString(digest);
+    }
 }
+
 
